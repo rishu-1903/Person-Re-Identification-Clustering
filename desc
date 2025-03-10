@@ -1,0 +1,28 @@
+description of the project
+
+This project focuses on automatically clustering images of the same individual from a dataset captured in diverse real-world conditions. It enables search-and-retrieval, allowing users to input a query image and retrieve all matching images.
+
+🚀 Key Features
+🔹 Person Clustering: Groups images of the same individual across the dataset using deep learning and feature extraction.
+🔹 Search & Retrieval: Users can input a query image, and the system retrieves all images of the same person.
+🔹 Attribute Extraction: Identifies person-level attributes such as clothing color, accessories, and gender.
+🔹 Data Visualization: Displays the dataset in 2D/3D space with cluster-based representations for better understanding.
+
+🔧 Tech Stack
+✅ Deep Learning (CNN, Transformer-based models)
+✅ OpenCV for image processing
+✅ FAISS/Scikit-learn for clustering & retrieval
+✅ Matplotlib & Plotly for visualization
+
+📌 How It Works
+1️⃣ Extracts deep feature embeddings from images.
+2️⃣ Clusters images of the same person using unsupervised learning.
+3️⃣ Enables search-based retrieval by matching query images with the closest cluster.
+4️⃣ Provides attribute-based filtering for refined search results.
+5️⃣ Visualizes clusters and dataset distribution.
+
+📜 Next Steps
+ Improve clustering accuracy with self-supervised learning.
+ Enhance retrieval performance using hybrid embedding techniques.
+ Optimize real-time query response time.
+🔗 Live Demo & Documentation Coming Soon!
