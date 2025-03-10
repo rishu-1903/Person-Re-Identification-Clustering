@@ -1,0 +1,528 @@
+from sentence_transformers import SentenceTransformer, util
+from PIL import Image
+import glob
+import torch
+import pickle
+import zipfile
+from IPython.display import display
+from IPython.display import Image as IPImage
+import os
+from tqdm.autonotebook import tqdm
+
+model = SentenceTransformer('clip-ViT-B-32')
+import zipfile
+
+
+zip_filename = '/content/tango-cv-assessment-dataset.zip'
+
+
+with zipfile.ZipFile(zip_filename, 'r') as zf:
+
+    zip_contents = zf.namelist()
+
+
+print("Contents of the zip file:")
+for file in zip_contents:
+    print(file)
+img_folder = 'tango/'
+if not os.path.exists(img_folder) or len(os.listdir(img_folder)) == 0:
+    os.makedirs(img_folder, exist_ok=True)
+
+    photo_filename = '/content/tango-cv-assessment-dataset.zip'
+    if not os.path.exists(photo_filename):   #Download dataset if does not exist
+
+        !wget https://raw.githubusercontent.com/UKPLab/sentence-transformers/master/examples/applications/image-search/datasets/tango-cv-assessment-dataset.zip
+
+
+    with zipfile.ZipFile(photo_filename, 'r') as zf:
+        for member in tqdm(zf.infolist(), desc='Extracting'):
+            zf.extract(member, img_folder)
+import zipfile
+import os
+
+
+zip_filename = '/content/tango-cv-assessment-dataset.zip'
+img_folder = 'tango/'
+
+
+if not os.path.exists(img_folder):
+    os.makedirs(img_folder)
+
+
+with zipfile.ZipFile(zip_filename, 'r') as zf:
+    zf.extractall(img_folder)
+print(f"Extracted files: {os.listdir(img_folder)}")
+import os
+from PIL import Image
+
+
+img_paths = []
+for root, dirs, files in os.walk(img_folder):
+    for file in files:
+        if file.lower().endswith(('.jpg', '.jpeg', '.png')):
+            img_paths.append(os.path.join(root, file))
+
+
+if not img_paths:
+    print("No image files found in the folder.")
+else:
+    print(f"Found {len(img_paths)} images.")
+pip install scikit-learn
+print(img_paths)
+
+for root, dirs, files in os.walk(img_folder):
+    print(f"Root: {root}, Files: {files}")
+  
+import os
+
+img_folder = 'tango/'
+print("Checking images in the folder...")
+print(os.listdir(img_folder))
+import os
+
+img_folder = 'tango/tango-cv-assessment-dataset/'
+
+img_paths = []
+
+for root, dirs, files in os.walk(img_folder):
+    for file in files:
+        if file.lower().endswith(('.jpg', '.jpeg', '.png')):
+            img_paths.append(os.path.join(root, file))
+
+
+print(f"First 5 image paths: {img_paths[:5]}")
+
+
+if not img_paths:
+    print("No image files found in the folder.")
+else:
+    print(f"Found {len(img_paths)} images.")
+pip install transformers torch torchvision
+from transformers import CLIPProcessor, CLIPModel
+import torch
+from PIL import Image
+import numpy as np
+
+
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+
+image_embeddings = []
+
+
+for img_path in tqdm(img_paths, desc='Encoding images'):
+    try:
+
+        img = Image.open(img_path).convert("RGB")
+
+        inputs = processor(images=img, return_tensors="pt", size=224)
+
+        with torch.no_grad():
+            outputs = model.get_image_features(**inputs)
+
+
+        image_embeddings.append(outputs.cpu().numpy())
+    except Exception as e:
+        print(f"Error processing image {img_path}: {e}")
+        continue
+
+
+if not image_embeddings:
+    print("No valid embeddings were generated.")
+else:
+
+    image_embeddings = np.vstack(image_embeddings)
+    print(f"Generated {len(image_embeddings)} embeddings.")
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+from collections import defaultdict
+
+
+if not image_embeddings:
+    print("No embeddings were generated. Check for errors during image processing.")
+else:
+
+    image_embeddings = np.vstack(image_embeddings)
+    print(f"Shape of embeddings: {image_embeddings.shape}")
+
+
+    num_clusters = 10
+    kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+    kmeans.fit(image_embeddings)
+
+    labels = kmeans.labels_
+
+
+    pca = PCA(n_components=2)
+    reduced_embeddings = pca.fit_transform(image_embeddings)
+
+
+    plt.scatter(reduced_embeddings[:, 0], reduced_embeddings[:, 1], c=labels, cmap='viridis', s=5)
+    plt.colorbar()
+    plt.title("2D Visualization of Image Clusters")
+    plt.show()
+
+
+    cluster_dict = defaultdict(list)
+
+
+    for idx, label in enumerate(labels):
+        cluster_dict[label].append(img_paths[idx])
+
+
+    for cluster, images in cluster_dict.items():
+        print(f"Cluster {cluster}: {len(images)} images")
+        print(images[:5])
+        print()
+from tqdm import tqdm
+from PIL import Image
+import numpy as np
+from transformers import CLIPProcessor, CLIPModel
+import torch
+
+
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+
+
+image_embeddings = []
+
+for img_path in tqdm(img_paths, desc='Encoding images'):
+    try:
+
+        img = Image.open(img_path).convert("RGB")
+        print(f"Processing image: {img_path}")
+
+        inputs = processor(images=img, return_tensors="pt", size=224)
+
+
+        with torch.no_grad():
+            outputs = model.get_image_features(**inputs)
+
+
+        image_embeddings.append(outputs.cpu().numpy())
+        print(f"Embedding generated for {img_path}")
+
+    except Exception as e:
+        print(f"Error processing image {img_path}: {e}")
+        continue
+
+if not image_embeddings:
+    print("No valid embeddings were generated.")
+else:
+
+    image_embeddings = np.vstack(image_embeddings)
+    print(f"Generated {len(image_embeddings)} embeddings.")
+import random
+
+
+sample_images = random.sample(img_paths, 10)
+print(f"Selected 10 images: {sample_images}")
+
+image_embeddings = []
+
+
+for img_path in tqdm(sample_images, desc='Encoding images'):
+    try:
+
+        img = Image.open(img_path).convert("RGB")
+
+
+        inputs = processor(images=img, return_tensors="pt", size=224)
+
+
+        with torch.no_grad():
+            outputs = model.get_image_features(**inputs)
+
+
+        image_embeddings.append(outputs.cpu().numpy())
+    except Exception as e:
+        print(f"Error processing image {img_path}: {e}")
+        continue
+
+image_embeddings = np.vstack(image_embeddings)
+print(f"Generated {len(image_embeddings)} embeddings.")
+from sklearn.cluster import KMeans
+
+
+kmeans = KMeans(n_clusters=2, random_state=42)
+kmeans.fit(image_embeddings)
+
+
+labels = kmeans.labels_
+print(f"Cluster labels: {labels}")
+import matplotlib.pyplot as plt
+
+
+for cluster_id in np.unique(labels):
+    plt.figure(figsize=(10, 10))
+    plt.title(f"Cluster {cluster_id}")
+    cluster_images = [sample_images[i] for i in range(len(labels)) if labels[i] == cluster_id]
+
+    for i, img_path in enumerate(cluster_images):
+        plt.subplot(1, len(cluster_images), i + 1)
+        img = Image.open(img_path)
+        plt.imshow(img)
+        plt.axis('off')
+
+    plt.show()
+from sklearn.cluster import KMeans
+import numpy as np
+import random
+from tqdm import tqdm
+from PIL import Image
+from transformers import CLIPProcessor, CLIPModel
+import torch
+
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+
+
+sample_images = random.sample(img_paths, 10)
+
+
+image_embeddings = []
+
+
+for img_path in tqdm(sample_images, desc='Encoding images'):
+    try:
+
+        img = Image.open(img_path).convert("RGB")
+
+
+        inputs = processor(images=img, return_tensors="pt", size=224)
+
+
+        with torch.no_grad():
+            outputs = model.get_image_features(**inputs)
+
+
+        image_embeddings.append(outputs.cpu().numpy())
+    except Exception as e:
+        print(f"Error processing image {img_path}: {e}")
+        continue
+
+image_embeddings = np.vstack(image_embeddings)
+print(f"Generated {len(image_embeddings)} embeddings.")
+
+
+kmeans = KMeans(n_clusters=10, random_state=42)
+kmeans.fit(image_embeddings)
+
+
+labels = kmeans.labels_
+print(f"Cluster labels: {labels}")
+
+def get_query_embedding(query_img_path):
+    try:
+
+        img = Image.open(query_img_path).convert("RGB")
+
+        inputs = processor(images=img, return_tensors="pt", size=224)
+
+        with torch.no_grad():
+            outputs = model.get_image_features(**inputs)
+        return outputs.cpu().numpy()
+    except Exception as e:
+        print(f"Error processing query image {query_img_path}: {e}")
+        return None
+
+
+query_img_path = '/content/photos/tango-cv-assessment-dataset/0001_c1s1_001051_00.jpg'
+query_embedding = get_query_embedding(query_img_path)
+
+
+if query_embedding is not None:
+
+    query_label = kmeans.predict(query_embedding)
+    print(f"Query image belongs to cluster: {query_label[0]}")
+else:
+    print("Query image processing failed.")
+import os
+if not os.path.exists(query_img_path):
+    print(f"File not found: {query_img_path}")
+else:
+    print(f"File found: {query_img_path}")
+from PIL import Image
+import numpy as np
+
+
+def retrieve_images_from_cluster(query_label, image_paths, labels):
+
+    indices = [i for i, label in enumerate(labels) if label == query_label]
+
+    if not indices:
+        print("No images found in the same cluster.")
+        return []
+
+
+    retrieved_images = [image_paths[i] for i in indices]
+    return retrieved_images
+
+
+sample_images = ["/content/photos/tango-cv-assessment-dataset/0001_c1s1_001051_00.jpg", "/content/photos/tango-cv-assessment-dataset/0001_c1s1_002301_00.jpg", "/content/photos/tango-cv-assessment-dataset/0001_c1s1_002401_00.jpg", "/content/photos/tango-cv-assessment-dataset/0001_c1s6_011741_00.jpg"]
+labels = [0, 1, 0, 1]
+query_image_path = "/content/photos/tango-cv-assessment-dataset/0001_c1s1_001051_00.jpg"
+
+
+def get_query_label(query_image_path, sample_images, labels):
+
+    if query_image_path in sample_images:
+        idx = sample_images.index(query_image_path)
+        return labels[idx]
+    else:
+        print("Query image not found in the dataset.")
+        return None
+
+
+query_label = get_query_label(query_image_path, sample_images, labels)
+
+if query_label is not None:
+
+    retrieved_images = retrieve_images_from_cluster(query_label, sample_images, labels)
+
+
+    for img_path in retrieved_images:
+        img = Image.open(img_path)
+        img.show()
+from PIL import Image
+
+
+def retrieve_images_from_cluster(query_label, image_paths, labels):
+
+    indices = [i for i, label in enumerate(labels) if label == query_label]
+
+    if not indices:
+        print("No images found in the same cluster.")
+        return []
+
+
+    retrieved_images = [image_paths[i] for i in indices]
+    return retrieved_images
+
+
+sample_images = ["/content/photos/tango-cv-assessment-dataset/0001_c1s1_001051_00.jpg", "/content/photos/tango-cv-assessment-dataset/0001_c1s1_002301_00.jpg", "/content/photos/tango-cv-assessment-dataset/0001_c1s1_002401_00.jpg", "/content/photos/tango-cv-assessment-dataset/0001_c1s6_011741_00.jpg"]
+labels = [0, 1, 0, 1]
+query_image_path = "/content/photos/tango-cv-assessment-dataset/0001_c1s1_001051_00.jpg"
+
+
+def get_query_label(query_image_path, sample_images, labels):
+    print(f"Checking if the query image {query_image_path} is in sample images.")
+
+    if query_image_path in sample_images:
+        idx = sample_images.index(query_image_path)
+        print(f"Query image found at index {idx}. Label: {labels[idx]}")
+        return labels[idx]
+    else:
+        print("Query image not found in the dataset.")
+        return None
+
+
+query_label = get_query_label(query_image_path, sample_images, labels)
+
+if query_label is not None:
+
+    retrieved_images = retrieve_images_from_cluster(query_label, sample_images, labels)
+
+    if retrieved_images:
+
+        print(f"Images in the same cluster as {query_image_path}:")
+        for img_path in retrieved_images:
+            print(f"Retrieving image: {img_path}")
+            img = Image.open(img_path)
+            img.show()
+    else:
+        print("No images found in the same cluster.")
+else:
+    print("Query image processing failed.")
+from transformers import CLIPProcessor, CLIPModel
+from PIL import Image
+import torch
+
+
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+
+
+attributes = ["wearing glasses", "wearing a hat", "red shirt", "blue pants", "formal attire", "casual wear"]
+
+
+def extract_attributes(image_path, attributes):
+    try:
+
+        img = Image.open(image_path).convert("RGB")
+        inputs = processor(text=attributes, images=img, return_tensors="pt", padding=True)
+
+
+        with torch.no_grad():
+            image_features = model.get_image_features(pixel_values=inputs["pixel_values"])
+            text_features = model.get_text_features(input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"])
+
+
+        similarity = torch.nn.functional.cosine_similarity(image_features, text_features, dim=-1)
+
+
+        ranked_attributes = sorted(zip(attributes, similarity.numpy()), key=lambda x: x[1], reverse=True)
+
+
+        return [attr[0] for attr in ranked_attributes[:3]]
+    except Exception as e:
+        print(f"Error processing image {image_path}: {e}")
+        return []
+
+
+query_image_path = "/content/photos/tango-cv-assessment-dataset/0001_c1s1_001051_00.jpg"
+top_attributes = extract_attributes(query_image_path, attributes)
+
+print(f"Top attributes for the query image: {top_attributes}")
+import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
+import numpy as np
+
+
+image_embeddings = np.random.rand(100, 512)
+image_labels = np.random.randint(0, 10, 100)
+
+def reduce_dimensions(embeddings, n_components=2, method="TSNE"):
+    if method == "TSNE":
+        reducer = TSNE(n_components=n_components, random_state=42)
+    elif method == "PCA":
+        reducer = PCA(n_components=n_components)
+    else:
+        raise ValueError("Unsupported dimensionality reduction method.")
+    return reducer.fit_transform(embeddings)
+
+
+reduced_embeddings = reduce_dimensions(image_embeddings, n_components=2, method="TSNE")
+
+
+def plot_2d(data, labels, title="2D Visualization"):
+    plt.figure(figsize=(10, 8))
+    scatter = plt.scatter(data[:, 0], data[:, 1], c=labels, cmap='tab10', s=50, alpha=0.7)
+    plt.colorbar(scatter, label="Cluster")
+    plt.title(title)
+    plt.xlabel("Dimension 1")
+    plt.ylabel("Dimension 2")
+    plt.show()
+
+
+plot_2d(reduced_embeddings, image_labels, title="t-SNE 2D Projection of Dataset")
+
+
+def plot_3d(data, labels, title="3D Visualization"):
+    from mpl_toolkits.mplot3d import Axes3D
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    scatter = ax.scatter(data[:, 0], data[:, 1], data[:, 2], c=labels, cmap='tab10', s=50, alpha=0.7)
+    fig.colorbar(scatter, ax=ax, label="Cluster")
+    ax.set_title(title)
+    ax.set_xlabel("Dimension 1")
+    ax.set_ylabel("Dimension 2")
+    ax.set_zlabel("Dimension 3")
+    plt.show()
+
+
+
